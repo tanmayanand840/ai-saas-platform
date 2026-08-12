@@ -1,0 +1,25 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ai-saas-ingress
+  namespace: ai-saas
+spec:
+  ingressClassName: nginx
+  rules:
+    - http:
+        paths:
+          - path: /api
+            pathType: Prefix
+            backend:
+              service:
+                name: ai-backend-service
+                port:
+                  number: 5000
+
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: ai-frontend-service
+                port:
+                  number: 80

@@ -5,7 +5,7 @@ import star_icon from "./star_icon.svg";
 import star_dull_icon from "./star_dull_icon.svg";
 import profile_img_1 from "./profile_img_1.png";
 import arrow_icon from "./arrow_icon.svg";
-import { SquarePen, Hash, Image, Eraser, Scissors, FileText } from 'lucide-react'
+import { SquarePen, Hash, FileText, Mail, TextQuote, Code2 } from 'lucide-react'
 import ai_gen_img_1 from "./ai_gen_img_1.png";
 import ai_gen_img_2 from "./ai_gen_img_2.png";
 import ai_gen_img_3 from "./ai_gen_img_3.png";
@@ -38,28 +38,25 @@ export const AiToolsData = [
     path: "/ai/blog-titles",
   },
   {
-    title: "AI Image Generation",
-    description:
-      "Create stunning visuals with our AI image generation tool. Experience the power of AI.",
-    Icon: Image,
+    disabled: true,
+    description: "",
+    Icon: null,
     bg: { from: "#6A5ACD", to: "#0066FF" }, // Purple → Blue
-    path: "/ai/generate-images",
+    path: null,
   },
   {
-    title: "Background Removal",
-    description:
-      "Effortlessly remove backgrounds from your images with our AI-driven tool.",
-    Icon: Eraser,
+    disabled: true,
+    description: "",
+    Icon: null,
     bg: { from: "#FFD033", to: "#FF8000" }, // Yellow → Orange
-    path: "/ai/remove-background",
+    path: null,
   },
   {
-    title: "Object Removal",
-    description:
-      "Remove unwanted objects from your images seamlessly with our AI object removal tool.",
-    Icon: Scissors,
+    disabled: true,
+    description: "",
+    Icon: null,
     bg: { from: "#FF8000", to: "#0066FF" }, // Orange → Blue
-    path: "/ai/remove-object",
+    path: null,
   },
   {
     title: "Resume Reviewer",
@@ -69,6 +66,10 @@ export const AiToolsData = [
     bg: { from: "#0066FF", to: "#FFD033" }, // Blue → Yellow
     path: "/ai/review-resume",
   },
+  { title: "AI Email Writer", description: "Generate job-specific, professional emails.", Icon: Mail, bg: { from: "#9333EA", to: "#0066FF" }, path: "/ai/email-writer", premium: true },
+  { title: "AI Text Summarizer", description: "Turn long content into concise key points.", Icon: TextQuote, bg: { from: "#0066FF", to: "#FF8000" }, path: "/ai/summarizer", premium: true },
+  { title: "Cover Letter Generator", description: "Create tailored cover letters for your applications.", Icon: FileText, bg: { from: "#FF8000", to: "#9333EA" }, path: "/ai/cover-letter", premium: true },
+  { title: "AI Code Reviewer", description: "Find issues and improvements in your code.", Icon: Code2, bg: { from: "#6A5ACD", to: "#0066FF" }, path: "/ai/code-reviewer", premium: true },
 ];
 
 export const dummyTestimonialData = [

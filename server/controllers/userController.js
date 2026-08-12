@@ -1,9 +1,10 @@
 import sql from "../configs/db.js";
+import { getAuth } from "@clerk/express";
 
 // Get user's own creations
 export const getUserCreations = async (req, res) => {
   try {
-    const { userId } = req.auth();
+    const { userId } = getAuth(req);
     const creations = await sql`
       SELECT * FROM CREATIONS WHERE user_id = ${userId} ORDER BY created_at DESC
     `;
@@ -28,7 +29,7 @@ export const getPublishedCreations = async (req, res) => {
 // Toggle like/unlike for a creation
 export const toggleLikeCreation = async (req, res) => {
   try {
-    const { userId } = req.auth();
+    const { userId } = getAuth(req);
     const { id } = req.body;
 
     const [creation] = await sql`SELECT * FROM creations WHERE id = ${id}`;

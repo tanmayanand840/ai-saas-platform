@@ -1,11 +1,18 @@
 import React from 'react'
 import { AiToolsData } from '../assets/assets'
 import { useNavigate } from 'react-router-dom'
-import { useUser } from '@clerk/clerk-react';
+import { useAuth, useUser } from '@clerk/clerk-react';
 
 const AiTools = () => {
   const navigate = useNavigate();
   const { user } = useUser();
+  const { has } = useAuth();
+  let isPremium = false;
+  try {
+    isPremium = typeof has === "function" && has({ plan: "premium" });
+  } catch {
+    isPremium = false;
+  }
 
   return (
     <div className="px-4 sm:px-20 xl:px-32 my-24 relative">
@@ -31,11 +38,11 @@ const AiTools = () => {
 
       {/* Tools Grid */}
       <div className="flex flex-wrap mt-16 justify-center gap-8 lg:gap-10">
-        {AiToolsData.map((tool, index) => (
+        {AiToolsData.filter((tool) => !tool.disabled).map((tool, index) => (
           <div
             key={index}
             className="group relative p-10 max-w-sm rounded-[2rem] bg-white/90 backdrop-blur-lg shadow-2xl border border-white/20 hover:shadow-[0_35px_60px_-15px_rgba(0,0,0,0.15)] hover:border-brandOrange/30 hover:-translate-y-3 hover:scale-[1.02] transition-all duration-700 cursor-pointer overflow-hidden"
-            onClick={() => user && navigate(tool.path)}
+            onClick={() => user && navigate(tool.premium && !isPremium ? "/ai/upgrade" : tool.path)}
             style={{
               background: 'linear-gradient(145deg, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0.8) 50%, rgba(248,250,252,0.9) 100%)'
             }}
@@ -67,6 +74,7 @@ const AiTools = () => {
               
               {/* Enhanced Title & Description */}
               <div className="space-y-4">
+                {tool.premium && <span className="inline-flex items-center rounded-full bg-amber-100 text-amber-800 px-2.5 py-1 text-xs font-bold">★ PREMIUM</span>}
                 <h3 className="text-xl font-bold text-brandDark group-hover:text-brandBlue group-hover:scale-105 transition-all duration-500 origin-left">
                   {tool.title}
                 </h3>
@@ -74,6 +82,7 @@ const AiTools = () => {
                 <p className="text-gray-600 text-sm leading-relaxed max-w-[95%] group-hover:text-gray-700 transition-all duration-500">
                   {tool.description}
                 </p>
+                {tool.premium && !isPremium && <span className="inline-flex items-center text-xs font-semibold text-slate-600">🔒 Premium</span>}
               </div>
               
               {/* Floating particles effect */}

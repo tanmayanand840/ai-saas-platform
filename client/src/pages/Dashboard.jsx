@@ -2,20 +2,26 @@ import React, { useEffect, useState } from "react";
 import { dummyCreationData } from "../assets/assets";
 import { GemIcon, Sparkles, TrendingUp, Calendar, BarChart3, Activity } from "lucide-react";
 import { Protect, useAuth } from "@clerk/clerk-react";
+import { useNavigate } from "react-router-dom";
 import CreationItem from "../components/CreationItem";
-import axios from "axios";
+import axios from "../lib/axios";
 import toast from "react-hot-toast";
-
-axios.defaults.baseURL = import.meta.env.VITE_BASE_URL;
 
 const Dashboard = () => {
   const [creations, setCreations] = useState([]);
   const [loading, setLoading] = useState(true);
   const { getToken } = useAuth();
+  const navigate = useNavigate();
+  const premiumTools = [
+    ["AI Email Writer", "/ai/email-writer"],
+    ["AI Text Summarizer", "/ai/summarizer"],
+    ["Cover Letter Generator", "/ai/cover-letter"],
+    ["AI Code Reviewer", "/ai/code-reviewer"],
+  ];
 
   const getDashboardData = async () => {
     try {
-      const { data } = await axios.get('/api/user/get-user-creations', {
+      const { data } = await axios.get('/user/get-user-creations', {
         headers: {Authorization: `Bearer ${await getToken()}`}
       })
 
@@ -169,6 +175,13 @@ const Dashboard = () => {
               description="Creative status"
             />
           </div>
+
+          <section className="mb-8">
+            <div className="flex items-center justify-between mb-4"><div><h2 className="text-xl font-bold text-slate-800">AI Tools</h2><p className="text-sm text-slate-500">Premium tools are available with an active Premium plan.</p></div><button onClick={() => navigate("/ai/upgrade")} className="text-sm font-semibold text-blue-600">View plans</button></div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+              {premiumTools.map(([name, path]) => <button key={path} onClick={() => navigate(path)} className="text-left p-5 rounded-2xl bg-white shadow-md hover:shadow-lg transition-shadow border border-amber-100"><span className="text-xs font-bold text-amber-700">★ PREMIUM</span><p className="mt-2 font-semibold text-slate-800">{name}</p><p className="mt-1 text-sm text-slate-500">Open tool</p></button>)}
+            </div>
+          </section>
 
           {/* Recent Creations Section */}
           <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 overflow-hidden">

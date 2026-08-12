@@ -1,4 +1,4 @@
-﻿import {
+import {
   FileText,
   Sparkles,
   Upload,
@@ -40,12 +40,7 @@ const ReviewResume = () => {
       formData.append("resume", input);
 
       const token = await getToken();
-
-      if (!token) {
-        toast.error("Session expired. Please sign in again.");
-        setLoading(false);
-        return;
-      }
+      console.log("Auth token:", token ? "✅ Present" : "❌ Missing");
 
       const { data } = await axios.post(
         "/ai/resume-review",
@@ -53,6 +48,7 @@ const ReviewResume = () => {
         {
           headers: {
             Authorization: `Bearer ${token}`,
+            "Content-Type": "multipart/form-data",
           },
         }
       );
@@ -65,7 +61,7 @@ const ReviewResume = () => {
       }
     } catch (error) {
       console.error("Upload error:", error);
-      toast.error(error.message || "Failed to analyze resume");
+      toast.error("Failed to analyze resume");
     } finally {
       setLoading(false);
     }
@@ -73,18 +69,12 @@ const ReviewResume = () => {
 
   const handleFileChange = (file) => {
     if (file) {
-      const isPdf = file.type === "application/pdf" || file.name.toLowerCase().endsWith(".pdf");
-      if (!isPdf) {
+      if (file.type === "application/pdf") {
+        setInput(file);
+        setContent(""); // Reset analysis
+      } else {
         toast.error("Please upload a PDF file");
-        return;
       }
-      if (file.size > 10 * 1024 * 1024) {
-        toast.error("Resume must be 10MB or smaller");
-        return;
-      }
-
-      setInput(file);
-      setContent("");
     }
   };
 
@@ -476,3 +466,4 @@ const ReviewResume = () => {
 };
 
 export default ReviewResume;
+

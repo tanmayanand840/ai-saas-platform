@@ -1,14 +1,13 @@
 import { Protect, useClerk, useUser } from "@clerk/clerk-react";
 import {
-  Eraser,
   FileText,
   Hash,
   House,
-  Image,
   LogOut,
-  Scissors,
   SquarePen,
-  Users,
+  Mail,
+  TextQuote,
+  Code2,
 } from "lucide-react";
 import React from "react";
 import { NavLink } from "react-router-dom";
@@ -17,11 +16,11 @@ const navItems = [
   { to: "/ai", label: "Dashboard", Icon: House },
   { to: "/ai/write-article", label: "Write Article", Icon: SquarePen },
   { to: "/ai/blog-titles", label: "Blog Titles", Icon: Hash },
-  { to: "/ai/generate-images", label: "Generate Images", Icon: Image },
-  { to: "/ai/remove-background", label: "Remove Background", Icon: Eraser },
-  { to: "/ai/remove-object", label: "Remove Object", Icon: Scissors },
   { to: "/ai/review-resume", label: "Review Resume", Icon: FileText },
-  { to: "/ai/community", label: "Community", Icon: Users },
+  { to: "/ai/email-writer", label: "Email Writer", Icon: Mail, premium: true },
+  { to: "/ai/summarizer", label: "Text Summarizer", Icon: TextQuote, premium: true },
+  { to: "/ai/cover-letter", label: "Cover Letter", Icon: FileText, premium: true },
+  { to: "/ai/code-reviewer", label: "Code Reviewer", Icon: Code2, premium: true },
 ];
 
 const Sidebar = ({ sidebar, setSidebar }) => {
@@ -58,7 +57,7 @@ const Sidebar = ({ sidebar, setSidebar }) => {
 
         {/* Enhanced Nav Links */}
         <div className="px-4 mt-8 space-y-1">
-          {navItems.map(({ to, label, Icon }) => (
+          {navItems.map(({ to, label, Icon, premium }) => (
             <NavLink
               key={to}
               to={to}
@@ -95,6 +94,7 @@ const Sidebar = ({ sidebar, setSidebar }) => {
                   <span className="relative z-10 font-semibold tracking-wide">
                     {label}
                   </span>
+                  {premium && <span className={`relative z-10 ml-auto text-[10px] font-bold ${isActive ? "text-amber-100" : "text-amber-600"}`}>★</span>}
                   
                   {/* Subtle hover indicator */}
                   {!isActive && (

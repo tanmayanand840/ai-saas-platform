@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: frontend-runtime-config
+  namespace: ai-saas
+data:
+  config.js: |
+    window.__APP_CONFIG__ = {
+      API_URL: "/api"
+    };

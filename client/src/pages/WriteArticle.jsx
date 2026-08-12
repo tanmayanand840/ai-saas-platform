@@ -12,12 +12,10 @@ import {
   Copy,
   CheckCircle,
 } from "lucide-react";
-import axios from "axios";
+import axios from "../lib/axios";
 import { useAuth } from "@clerk/clerk-react";
 import toast from "react-hot-toast";
 import Markdown from "react-markdown";
-
-axios.defaults.baseURL = import.meta.env.VITE_BASE_URL;
 
 const WriteArticle = () => {
   const articleLength = [
@@ -39,7 +37,7 @@ const WriteArticle = () => {
       const prompt = `Write an article about ${input} in ${selectedLength.text}`;
 
       const { data } = await axios.post(
-        `/api/ai/generate-article`,
+        "/ai/generate-article",
         { prompt, length: selectedLength.length },
         {
           headers: { Authorization: `Bearer ${await getToken()}` },
@@ -52,7 +50,11 @@ const WriteArticle = () => {
         toast.error(data.message);
       }
     } catch (error) {
-      toast.error(error.message);
+      console.error("Write Article failed", error);
+      const status = error.response?.status;
+      const message = error.response?.data?.message || error.message;
+
+      toast.error(status ? `Request failed (${status}): ${message}` : message);
     }
     setLoading(false);
   };

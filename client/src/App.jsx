@@ -5,14 +5,11 @@ import {
   Dashboard,
   WriteArticle,
   BlogTitles,
-  GenerateImages,
-  RemoveBackground,
-  RemoveObject,
   ReviewResume,
-  Community
+  Upgrade, EmailWriter, TextSummarizer, CoverLetterGenerator, CodeReviewer
 } from "./pages"
+import PremiumRoute from "./components/PremiumRoute"
 import { useAuth } from '@clerk/clerk-react'
-import { useEffect } from 'react'
 import { Toaster } from 'react-hot-toast'
 import { Loader } from 'lucide-react'
 
@@ -38,11 +35,12 @@ const App = () => {
           <Route index element={<Dashboard />} />
           <Route path='write-article' element={<WriteArticle />} />
           <Route path='blog-titles' element={<BlogTitles />} />
-          <Route path='generate-images' element={<GenerateImages />} />
-          <Route path='remove-background' element={<RemoveBackground />} />
-          <Route path='remove-object' element={<RemoveObject />} />
           <Route path='review-resume' element={<ReviewResume />} />
-          <Route path='community' element={<Community />} />
+          <Route path='email-writer' element={<PremiumRoute><EmailWriter /></PremiumRoute>} />
+          <Route path='summarizer' element={<PremiumRoute><TextSummarizer /></PremiumRoute>} />
+          <Route path='cover-letter' element={<PremiumRoute><CoverLetterGenerator /></PremiumRoute>} />
+          <Route path='code-reviewer' element={<PremiumRoute><CodeReviewer /></PremiumRoute>} />
+          <Route path='upgrade' element={<Upgrade />} />
         </Route>
       </Routes>
     </div>
