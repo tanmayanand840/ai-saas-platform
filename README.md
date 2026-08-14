@@ -1,10 +1,11 @@
 # AI SaaS App
 
-AI SaaS App is a full-stack productivity platform for writing, image generation, image cleanup, resume review, and code assistance. It uses Clerk for authentication and premium plan gating, Neon Postgres for history, OpenRouter for text generation, Clipdrop for image operations, and Cloudinary for media storage.
+AI SaaS App is a full-stack productivity platform for writing, image generation, image cleanup, resume review, code assistance, and RAG-based document chat. It uses Clerk for authentication and premium plan gating, Neon Postgres for history, OpenRouter for text generation and embeddings, Qdrant for vector search, Clipdrop for image operations, and Cloudinary for media storage.
 
 ![Node](https://img.shields.io/badge/Node.js-Express-339933?logo=node.js&logoColor=white)
 ![React](https://img.shields.io/badge/React-Vite-61DAFB?logo=react&logoColor=white)
 ![Postgres](https://img.shields.io/badge/Neon-PostgreSQL-336791?logo=postgresql&logoColor=white)
+![Qdrant](https://img.shields.io/badge/Vector%20DB-Qdrant-DC244C)
 ![Clerk](https://img.shields.io/badge/Auth-Clerk-6C47FF)
 ![License](https://img.shields.io/badge/License-MIT-green)
 
@@ -49,6 +50,7 @@ Premium tools require an authenticated user with an active Clerk premium plan.
 | AI Text Summarizer | Condenses long text into a summary |
 | Cover Letter Generator | Generates a tailored cover letter |
 | AI Code Reviewer | Reviews code and suggests improvements |
+| AI Document Chat | Upload documents (PDF/DOCX/TXT) and chat with them using retrieval-augmented generation |
 
 ### App capabilities
 
@@ -57,6 +59,8 @@ Premium tools require an authenticated user with an active Clerk premium plan.
 - Saved creation history per user
 - Public gallery for published creations
 - Like and unlike support for published creations
+- Document upload, chunking, embedding, and semantic retrieval for AI Document Chat
+- Per-user document quota and chat history for the RAG feature
 - Responsive React and Tailwind UI
 
 ## Tech Stack
@@ -66,8 +70,11 @@ Premium tools require an authenticated user with an active Clerk premium plan.
 | Frontend | React, Vite, Tailwind CSS |
 | Backend | Node.js, Express |
 | Database | Neon PostgreSQL |
+| Vector database | Qdrant |
 | Auth | Clerk |
 | AI text | OpenRouter |
+| Embeddings | OpenRouter (default) or OpenAI, via LangChain |
+| Document parsing | pdf-parse, mammoth |
 | Image operations | Clipdrop |
 | Media storage | Cloudinary |
 | Deployment | Kubernetes in `k8s/` |
@@ -95,6 +102,7 @@ flowchart TB
     subgraph External["Managed External Services"]
         ClerkBE[(Clerk Auth and Billing)]
         Neon[(Neon PostgreSQL)]
+        Qdrant[(Qdrant Vector DB)]
         OpenRouter[[OpenRouter]]
         Clipdrop[[Clipdrop]]
         Cloudinary[(Cloudinary)]
@@ -112,6 +120,8 @@ flowchart TB
     Ctrl -->|text generation| OpenRouter
     Ctrl -->|image generation and cleanup| Clipdrop
     Ctrl -->|upload media| Cloudinary
+    Ctrl -->|chunk, embed, and search documents| Qdrant
+    Ctrl -->|embeddings| OpenRouter
 
     Cloudinary -->|hosted URL| UI
 ```
@@ -124,6 +134,7 @@ flowchart TB
 - Text generation stays server-side so API keys never reach the browser.
 - Images are streamed through Cloudinary instead of being persisted on local disk.
 - Every creation is stored in Neon so it can be surfaced in the user dashboard.
+- RAG document metadata and chat history live in Neon; document vectors live in Qdrant.
 
 ## Request Flow
 
@@ -137,6 +148,22 @@ Example: a logged-in user generates a cover letter.
 6. The API returns the response to the client, which renders it in the dashboard.
 
 Image generation and cleanup follow the same pattern, except the controller also sends the file through Clipdrop and stores the final asset in Cloudinary.
+
+### AI Document Chat (RAG)
+
+Uploading a document:
+
+1. The client sends `POST /api/rag/documents` with the file (multipart) and a Clerk session token.
+2. `auth` and `requirePremium` gate the request, and the per-user document quota is checked.
+3. The document is parsed (PDF/DOCX/TXT), split into chunks, embedded via OpenRouter (or OpenAI), and upserted into Qdrant.
+4. Document metadata (status, chunk count, embedding model) is stored in Neon.
+
+Asking a question:
+
+1. The client sends `POST /api/rag/query` (or `/api/rag/chat`) with a question and an optional `documentId`.
+2. The question is embedded and matched against Qdrant to retrieve the top relevant chunks, scoped to the user (and document, if given).
+3. The retrieved chunks are passed to OpenRouter to generate a grounded answer with source citations.
+4. The exchange is saved as a chat record in Neon and returned to the client.
 
 ---
 
@@ -199,7 +226,15 @@ CLOUDINARY_CLOUD_NAME=your_cloudinary_cloud_name
 CLOUDINARY_API_KEY=your_cloudinary_api_key
 CLOUDINARY_API_SECRET=your_cloudinary_api_secret
 CLIPDROP_API_KEY=your_clipdrop_api_key
+
+# RAG / AI Document Chat
+QDRANT_URL=your_qdrant_cloud_url
+QDRANT_API_KEY=your_qdrant_api_key
+EMBEDDING_PROVIDER=openrouter
+EMBEDDING_MODEL=nvidia/nemotron-3-embed-1b:free
 ```
+
+`server/.env.example` documents additional optional overrides (collection name, vector size, chunk size/overlap, retrieval top-k, file size and document count limits) — all have sensible built-in defaults.
 
 Create `client/.env`:
 
@@ -214,6 +249,8 @@ VITE_BASE_URL=http://localhost:5000
 - `VITE_BASE_URL` should point to the backend while developing locally.
 - `CLIPDROP_API_KEY` is required for image generation and cleanup routes.
 - `CLOUDINARY_*` variables are required for uploaded and generated image storage.
+- `QDRANT_URL` and `QDRANT_API_KEY` are required for AI Document Chat; use Qdrant Cloud and never expose these to the client.
+- Embeddings route through OpenRouter by default (no separate account needed). Set `EMBEDDING_PROVIDER=openai` with `OPENAI_API_KEY` to call OpenAI directly instead.
 - If you deploy elsewhere, set the same values as environment secrets or runtime config.
 
 ---
@@ -251,6 +288,22 @@ All AI routes require a valid Clerk session. Premium routes also require an acti
 | GET | `/api/user/get-published-creations` | Auth required |
 | POST | `/api/user/toggle-like-creation` | Auth required |
 
+### RAG routes (AI Document Chat)
+
+All routes below `/health` require Clerk auth and an active premium plan.
+
+| Method | Route | Access |
+|---|---|---|
+| GET | `/api/rag/health` | Public (used by k8s liveness probes) |
+| POST | `/api/rag/documents` | Premium required (multipart file upload) |
+| POST | `/api/rag/documents/upload` | Premium required (alias of above) |
+| GET | `/api/rag/documents` | Premium required |
+| GET | `/api/rag/documents/:id` | Premium required |
+| DELETE | `/api/rag/documents/:id` | Premium required |
+| POST | `/api/rag/query` | Premium required |
+| POST | `/api/rag/chat` | Premium required (alias of `/query`) |
+| GET | `/api/rag/chats` | Premium required |
+
 ---
 
 ## Frontend Routes
@@ -266,6 +319,7 @@ All AI routes require a valid Clerk session. Premium routes also require an acti
 | `/ai/summarizer` | AI Text Summarizer |
 | `/ai/cover-letter` | Cover Letter Generator |
 | `/ai/code-reviewer` | AI Code Reviewer |
+| `/ai/document-chat` | AI Document Chat |
 | `/ai/upgrade` | Upgrade page |
 
 ---
@@ -293,6 +347,10 @@ ai-saas-app/
 | Frontend requests fail | `VITE_BASE_URL` points to the running backend |
 | Premium routes return 403 | The Clerk user does not have the premium plan |
 | Resume upload fails | The file is a PDF and is under the size limit enforced by the server |
+| `/api/rag/health` returns 503 | `QDRANT_URL` / `QDRANT_API_KEY` are missing or invalid, or Qdrant is unreachable |
+| Document upload fails or stays "processing" | Check server logs for parsing/embedding errors; confirm `EMBEDDING_PROVIDER`/`EMBEDDING_MODEL` and matching API key are set |
+| Document upload returns 429 | Per-user document quota (`MAX_DOCS_PER_USER`) reached — delete existing documents |
+| Document chat answers are empty or off-topic | Re-check the embedding model's vector size matches the Qdrant collection; recreate the collection after changing models |
 
 ---
 
