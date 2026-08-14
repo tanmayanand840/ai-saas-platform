@@ -6,6 +6,7 @@ import {
   WriteArticle,
   BlogTitles,
   ReviewResume,
+  DocumentChat,
   Upgrade, EmailWriter, TextSummarizer, CoverLetterGenerator, CodeReviewer
 } from "./pages"
 import PremiumRoute from "./components/PremiumRoute"
@@ -31,11 +32,13 @@ const App = () => {
       <Toaster />
       <Routes>
         <Route path='/' element={isSignedIn ? <Navigate to="/ai" replace /> : <Home />}  />
+        <Route path='/ai-document-chat' element={<Navigate to="/ai/document-chat" replace />} />
         <Route path='/ai' element={<Layout />}>
           <Route index element={<Dashboard />} />
           <Route path='write-article' element={<WriteArticle />} />
           <Route path='blog-titles' element={<BlogTitles />} />
           <Route path='review-resume' element={<ReviewResume />} />
+          <Route path='document-chat' element={<PremiumRoute><DocumentChat /></PremiumRoute>} />
           <Route path='email-writer' element={<PremiumRoute><EmailWriter /></PremiumRoute>} />
           <Route path='summarizer' element={<PremiumRoute><TextSummarizer /></PremiumRoute>} />
           <Route path='cover-letter' element={<PremiumRoute><CoverLetterGenerator /></PremiumRoute>} />

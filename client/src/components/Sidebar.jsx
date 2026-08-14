@@ -8,6 +8,7 @@ import {
   Mail,
   TextQuote,
   Code2,
+  MessageSquare,
 } from "lucide-react";
 import React from "react";
 import { NavLink } from "react-router-dom";
@@ -21,6 +22,7 @@ const navItems = [
   { to: "/ai/summarizer", label: "Text Summarizer", Icon: TextQuote, premium: true },
   { to: "/ai/cover-letter", label: "Cover Letter", Icon: FileText, premium: true },
   { to: "/ai/code-reviewer", label: "Code Reviewer", Icon: Code2, premium: true },
+  { to: "/ai/document-chat", label: "Document Chat", Icon: MessageSquare, premium: true },
 ];
 
 const Sidebar = ({ sidebar, setSidebar }) => {

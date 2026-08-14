@@ -1,0 +1,46 @@
+
+> server@1.0.0 dev
+> nodemon server.js
+
+[33m[nodemon] 3.1.10[39m
+[33m[nodemon] to restart at any time, enter `rs`[39m
+[33m[nodemon] watching path(s): *.*[39m
+[33m[nodemon] watching extensions: js,mjs,cjs,json[39m
+[32m[nodemon] starting `node server.js`[39m
+Cloudinary connected
+[embedding] provider=openrouter model=nvidia/nemotron-3-embed-1b:free
+[Qdrant] Collection "ai_saas_documents" already exists
+[Qdrant] initialized successfully
+[chat.service] rag_chats table ready
+[document.service] rag_documents table ready
+Server is running on port: 5000
+[32m[nodemon] clean exit - waiting for changes before restart[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `node server.js`[39m
+Cloudinary connected
+[embedding] provider=openrouter model=nvidia/nemotron-3-embed-1b:free
+[Qdrant] Collection "ai_saas_documents" already exists
+[Qdrant] initialized successfully
+[chat.service] rag_chats table ready
+[document.service] rag_documents table ready
+Server is running on port: 5000
+GET /api/rag/documents -> 304
+GET /api/rag/chats -> 304
+[rag.controller] query user=user_3Hj9stngKh2KJwNvg7pneFC9VBJ documentId=all
+[rag] query START user=user_3Hj9stngKh2KJwNvg7pneFC9VBJ documentId=all
+[retrieval] query="what is dbms?..." userId=user_3Hj9stngKh2KJwNvg7pneFC9VBJ documentId=all
+[retrieval] returned 5 chunk(s) (top score: 0.606)
+[generation] building prompt with 5 chunk(s) for question="what is dbms?..."
+[generation] answer generated
+[rag] query DONE answer_len=414 sources=5
+POST /api/rag/chat -> 200
+GET /api/rag/chats -> 200
+[rag.controller] query user=user_3Hj9stngKh2KJwNvg7pneFC9VBJ documentId=all
+[rag] query START user=user_3Hj9stngKh2KJwNvg7pneFC9VBJ documentId=all
+[retrieval] query="what is airtifical intelligence?..." userId=user_3Hj9stngKh2KJwNvg7pneFC9VBJ documentId=all
+[retrieval] returned 5 chunk(s) (top score: 0.15)
+[generation] building prompt with 5 chunk(s) for question="what is airtifical intelligence?..."
+[generation] answer generated
+[rag] query DONE answer_len=59 sources=5
+POST /api/rag/chat -> 200
+GET /api/rag/chats -> 200
